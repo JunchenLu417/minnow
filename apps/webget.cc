@@ -5,12 +5,30 @@
 #include <span>
 #include <string>
 
+#include <format>
+
 using namespace std;
 
 void get_URL( const string& host, const string& path )
 {
-  cerr << "Function called: get_URL(" << host << ", " << path << ")\n";
-  cerr << "Warning: get_URL() has not been implemented yet.\n";
+  // cerr << "Function called: get_URL(" << host << ", " << path << ")\n";  // get_URL(cs144.keithw.org, /hello)
+  // cerr << "Warning: get_URL() has not been implemented yet.\n";
+
+  TCPSocket tcpsocket;
+  tcpsocket.connect(Address(host, "http"));  // set up the connection -> telnet cs144.keithw.org http
+  tcpsocket.write(format("GET {} HTTP/1.1\r\n", path));
+  tcpsocket.write(format("Host: {}\r\n", host));
+  tcpsocket.write("Connection: close\r\n");  // server can close the connection after replying
+  tcpsocket.write("\r\n");  // done with http request
+
+  while (true) {
+    string response;
+    tcpsocket.read(response);  // until EOF, print server's response to console
+    if (!response.empty())
+      cout << response;
+    else
+      break;
+  }
 }
 
 int main( int argc, char* argv[] )
