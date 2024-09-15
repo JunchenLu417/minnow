@@ -4,6 +4,8 @@
 #include <string>
 #include <string_view>
 
+#include <vector>
+
 class Reader;
 class Writer;
 
@@ -24,11 +26,11 @@ public:
 protected:
   // Please add any additional state to the ByteStream here, and not to the Writer and Reader interfaces.
   uint64_t capacity_;
-  uint64_t bytes_pushed_total;  // in total
-  uint64_t read_pos = 0;  // avoid frequent pop() with small len
+  uint64_t bytes_pushed_total = 0;  // deduce bytes_popped/buffered_total
+  uint64_t read_pos = 0, write_pos = 0;
   bool error_ {};  // init to false
   bool close_ {};  // writer has reached its ending
-  std::string buffer;
+  std::vector<char> buffer_;  // a fixed-size ring buffer
 };
 
 class Writer : public ByteStream
