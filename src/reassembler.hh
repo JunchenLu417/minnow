@@ -6,7 +6,8 @@ class Reassembler
 {
 public:
   // Construct Reassembler to write into given ByteStream.
-  explicit Reassembler( ByteStream&& output ) : output_( std::move( output ) ) {}
+  explicit Reassembler( ByteStream&& output ) : output_( std::move( output ) ), 
+    buffer_(get_capacity(), std::make_pair('\0', false)) {}
 
   /*
    * Insert a new substring to be reassembled into a ByteStream.
@@ -42,4 +43,15 @@ public:
 
 private:
   ByteStream output_; // the Reassembler writes to this ByteStream
+
+  // bytes in the Reassembler's internal storage, with valid bit
+  std::vector<std::pair<char, bool>> buffer_;
+  uint64_t start_idx = 0;  // this->buffer_ is also a ring buffer
+
+  // helper functions for important indices
+  uint64_t get_first_unpopped_idx() { return this->reader().bytes_popped(); }
+  uint64_t get_first_unassembled_idx() { return get_first_unpopped_idx() + reader().bytes_buffered(); }
+  uint64_t get_available_capacity() { return writer().available_capacity(); }
+  uint64_t get_capacity() { return reader().bytes_buffered() + get_available_capacity(); }
+  uint64_t get_first_unacceptable_idx() { return get_first_unpopped_idx() + get_capacity(); }
 };
