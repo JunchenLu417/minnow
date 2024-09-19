@@ -2,11 +2,14 @@
 
 #include "byte_stream.hh"
 
+#include <limits>
+
 class Reassembler
 {
 public:
   // Construct Reassembler to write into given ByteStream.
   explicit Reassembler( ByteStream&& output ) : output_( std::move( output ) ), 
+    max_idx_seen(std::numeric_limits<uint64_t>::max()), 
     buffer_(get_capacity(), std::make_pair('\0', false)) {}
 
   /*
@@ -43,6 +46,7 @@ public:
 
 private:
   ByteStream output_; // the Reassembler writes to this ByteStream
+  uint64_t max_idx_seen;  // set only when is_last_substring
 
   // bytes in the Reassembler's internal storage, with valid bit
   std::vector<std::pair<char, bool>> buffer_;
